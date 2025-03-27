@@ -625,7 +625,13 @@ void InsMem1toMem2(int* br)
 //----------------------------------------------------------------------------------------------------------
 void PutMem2toMem3(int posB, int posK, int m, int posA){
 	int posB1 = Form1->posTrackBr;
-	double kb = static_cast<double>(posB) / posB1; // коэффициент изменения яркости
+	double kb = 1.0;  // коэффициент изменения яркости
+	if (posB != posB1) {
+		if(posB1!=0)
+			kb = static_cast<double>(posB) / posB1;
+		else
+            kb = static_cast<double>(posB) / 1.0;
+	}
 	double k = posK / 3.0;
 	m*=20;
 	double A = posA / 100.0;
@@ -1070,15 +1076,19 @@ void ExtractNumberFromFileName(AnsiString fname, AnsiString* numStr, AnsiString*
 void __fastcall TForm1::OpenImage(AnsiString fname1) {
 	String fileExt = AnsiLowerCase(ExtractFileExt(fname1));
 	ExtractNumberFromFileName(fname1, &numFile, &path, &countDigitsFname);
+    AnsiString fnamePrevA;
 	if (viewing) {
 		int num = numFile.ToInt();
 		AnsiString fstr = AnsiString("%0") + countDigitsFname + "d";
+		AnsiString fstrA = AnsiString("%") + "d";
 		fnamePrev = path + AnsiString().sprintf(fstr.c_str(), num-1) + fileExt;
+		fnamePrevA = path + AnsiString().sprintf(fstrA.c_str(), num-1) + fileExt;
 		fnameNext = path + AnsiString().sprintf(fstr.c_str(), num+1) + fileExt;
 	}
 
 	bool prevFile, nextFile;
 	if (TFile::Exists(fnamePrev)) prevFile=true;
+	if (TFile::Exists(fnamePrevA) && !prevFile) { prevFile=true;   fnamePrev = fnamePrevA;}
 	if (TFile::Exists(fnameNext)) nextFile=true;
 
 	if(!viewing) {
